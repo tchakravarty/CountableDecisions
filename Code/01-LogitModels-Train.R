@@ -7,11 +7,11 @@
 # - DONE function that extracts the relevant dataset for missingness threshold
 # - DONE create the dataset, and fit a logit model for each of the labels
 # - DONE compute the accuracy of the models (in-sample)
-# - IN PROGRESS create n-fold validation samples & compute the score
+# - DONE create n-fold validation samples & compute the score
 # Parameterizations:
 # 1. missingness threshold
 # 2. the accuracy metric
-# 3. 
+# 3. variable selection
 # comments: 
 #==========================================================
 
@@ -75,7 +75,7 @@ logitControl = trainControl(method = "cv", number = 5,
                             allowParallel = TRUE, summaryFunction = twoClassSummary, 
                             classProb = TRUE)
 
-dfTrainLogit[, vLabels] = lapply(dfTrainLogit[, vLabels], factor)
+# dfTrainLogit[, vLabels] = lapply(dfTrainLogit[, vLabels], factor)
 liLogitCV = lapply(vLabels, function(label) {
   train(form = as.formula(paste(label, "~", paste0(vCovLogit, collapse = "+"))), 
       data = dfTrainLogit, 
@@ -84,3 +84,13 @@ liLogitCV = lapply(vLabels, function(label) {
       method = "glm", 
       family = binomial(link = "logit"))
 })
+
+#==========================================================
+# compare the CV errors to the in-sample errors
+# NOTES: 
+# - names being picked up from one of the vectors
+#==========================================================
+dfAccLogit = data.frame(auc.cv = sapply(liLogitCV, function(x) x$results["ROC"]$ROC), 
+           auc = vAccLogit)
+
+# end #
